@@ -108,9 +108,9 @@ optional arguments:
 
 ### Training LASErMPNN
 
-To retrain the model, download the datasets with `download_ligand_encoder_training_dataset.sh` and `download_protonated_pdb_training_dataset.sh` for each respective dataset.
+To retrain the model, download the datasets with `download_ligand_encoder_training_dataset.sh` and `download_protonated_pdb_training_dataset.sh` for each respective dataset by running them in the project's root directory.
 
-We used 4x A6000 GPUs to train the LASErMPNN model takes around 24 hrs, we find around 60k optimizer steps to be sufficient. See `train_lasermpnn.py` for more information.
+We used 4x A6000 GPUs to train the LASErMPNN model which takes around 24 hrs, we find around 60k optimizer steps to be sufficient. See `train_lasermpnn.py` for more information.
 
 
 ### Training Ligand Encoder
