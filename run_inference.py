@@ -420,7 +420,7 @@ def load_model_from_parameter_dict(path_to_weights: str, inference_device: Union
 def sample_model(
     model: LASErMPNN, batch_data: BatchData, sequence_temp: Optional[float], bb_noise: float, params: dict, use_edo: bool = False, chi_temp: Optional[float] = None,
     verbose: bool = False, disable_pbar: bool = False, fs_sequence_temp: Optional[float] = None, chi_min_p: float = 0.0, seq_min_p: float = 0.0,
-    ignore_chain_mask_zeros: bool = False, disabled_residues: Optional[List[str]] = ['X'], disable_charged_first_shell: bool = False, repack_all: bool = False
+    ignore_chain_mask_zeros: bool = False, disabled_residues: Optional[List[str]] = ['X'], repack_all: bool = False
 ) -> Sampled_Output:
     """
     Given a model and batch data, return the model's sampled output.
@@ -429,10 +429,6 @@ def sample_model(
     model.eval()
 
     batch_data.to_device(model.device)
-    # if disable_charged_first_shell:
-    # batch_data.sequence_indices  = torch.full(batch_data.sequence_indices.shape, fill_value=aa_short_to_idx['X'], device=model.device, dtype=torch.long)
-    # batch_data.sequence_indices = torch.full_like(batch_data.sequence_indices, fill_value=aa_short_to_idx['A'], device=model.device, dtype=torch.long)
-    # batch_data.recompute_cb_atoms() # this isn't necesary since ProteinComplexData already does it when you call output_batch_data
     batch_data.construct_graphs(
         model.rotamer_builder,
         model.ligand_featurizer, 
@@ -443,11 +439,6 @@ def sample_model(
         num_adjacent_residues_to_drop = 0,
         build_hydrogens = params['model_params']['build_hydrogens'],
     )
-
-    first_shell_and_buried = None
-    if disable_charged_first_shell:
-        # Any first shell & buried residue logits are warped to prevent charged residues from being in the first shell.
-        first_shell_and_buried = (batch_data.first_shell_ligand_contact_mask & batch_data.sidechain_in_hull_mask)
 
     if not use_edo:
         if verbose: print("Using random decoding order.")
@@ -464,13 +455,10 @@ def sample_model(
             batch_data, 
             sequence_sample_temperature=sample_temperature_vector if sample_temperature_vector is not None else sequence_temp, 
             chi_angle_sample_temperature=chi_temp, disable_pbar=disable_pbar, chi_min_p=chi_min_p, seq_min_p=seq_min_p,
-            ignore_chain_mask_zeros=ignore_chain_mask_zeros, disabled_residues=disabled_residues, 
-            disable_charged_residue_mask=first_shell_and_buried, repack_all=repack_all
+            ignore_chain_mask_zeros=ignore_chain_mask_zeros, disabled_residues=disabled_residues, repack_all=repack_all
         )
 
     else:
-        assert not disable_charged_first_shell, 'Not yet implemented for LDO.'
-
         sampling_output, sampled_dorder, t_probs, t_ent = model.sample_by_lowest_entropy( # type: ignore
             batch_data, sequence_sample_temperature=sequence_temp, disabled_residues=disabled_residues
         )
@@ -662,11 +650,14 @@ def run_inference(input_pdb_path: str, path_to_weights: str, sequence_temp: Opti
     print("Wrote laser designed output to", output_path)
 
 
+
 def parse_args():
+    default_weights_path = str(CURR_FILE_DIR_PATH / 'model_weights/laser_weights_0p1A_noise_ligandmpnn_split.pt')
+
     parser = argparse.ArgumentParser(description='Run LASErMPNN inference on a given PDB file.')
     # Required input:
     parser.add_argument('input_pdb_code', type=str, help='Path to the input PDB file.')
-    parser.add_argument('--model_weights', '-w', dest='model_weights', type=str, default=str(CURR_FILE_DIR_PATH / 'model_weights/laser_weights_0p1A_noise_ligandmpnn_split.pt'), help='Path to dictionary of torch.save()ed model state_dict and training parameters.')
+    parser.add_argument('--model_weights', '-w', dest='model_weights', type=str, default=default_weights_path, help=f'Path to dictionary of torch.save()ed model state_dict and training parameters. Default: {default_weights_path}')
     # Optional input:
     parser.add_argument('--output_path', '-o', dest='output_path', type=str, default='laser_output.pdb', help='Path to the output PDB file.')
     parser.add_argument('--temp', '-t', dest='sequence_temp', type=str, default='', help='Sequence sample temperature.')
@@ -676,7 +667,6 @@ def parse_args():
     # Flags:
     parser.add_argument('--fix_beta', '-b', dest='fix_beta', action='store_true', help='Residues with B-Factor of 1.0 have sequence and rotamer fixed, residues with B-Factor of 0.0 are designed.')
     parser.add_argument('--ignore_statedict_mismatch', '-s', dest='strict_load', action='store_false', help='Small state_dict mismatches are ignored. Don\'t use this unless any missing parameters aren\'t learned during training.')
-    parser.add_argument('--ldo', '-l', dest='learned_decorder', action='store_true', help='Uses learned decoding order.')
     parser.add_argument('--ebd', '-e', dest='entropy_decoder', action='store_true', help='Uses entropy based decoding order. Decodes all residues and selects the lowest entropy residue as next to decode, then recomputes all remaining residues. Takes longer than normal decoding.')
     parser.add_argument('--repack_only', action='store_true', help='Only repack residues, do not design new ones.')
     parser.add_argument('--ignore_ligand', action='store_true', help='Ignore ligands in the input PDB file.')
@@ -685,7 +675,6 @@ def parse_args():
 
     seq_temp = float(out.sequence_temp) if out.sequence_temp else None
     backbone_noise = float(out.backbone_noise) if out.backbone_noise else 0.0
-    assert not (out.learned_decorder and out.entropy_decoder), "Cannot use both learned decoding order and entropy based decoding order."
     return out, seq_temp, backbone_noise
 
 
