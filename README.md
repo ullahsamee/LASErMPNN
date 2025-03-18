@@ -3,21 +3,20 @@
 
 ### Environment Setup
 
-A minimal version of LASErMPNN could be run in inference mode in any Python environment with PyTorch, torch-scatter, and torch-cluster.
+A minimal version of LASErMPNN could be run in inference mode in any Python environment with PyTorch, torch-scatter, and torch-cluster. 
+ProDy is used internally to read and write PDB files.
 
-To install the training environment, run the following set of commands using a [MiniForge](https://github.com/conda-forge/miniforge/releases/tag/24.11.3-2) installation (recommended) or an existing conda installation.
+To install the training environment, run the following set of commands using a [MiniForge](https://github.com/conda-forge/miniforge/releases/tag/24.11.3-2) installation (recommended) or an existing conda installation with a libmamba solver.
 
 ```bash
-conda create --name laser_torch -y
-conda activate laser_torch
-
-conda install python=3.8 numpy pytorch pytorch-cuda=11.8 pytorch-scatter pytorch-cluster scipy -c pytorch -c nvidia -c pyg -c defaults --override-channels -y
-pip install pykeops
-conda install pandas matplotlib seaborn plotly jupyter scipy ProDy pytest scikit-learn h5py rdkit -c conda-forge -y
-pip install logomaker wandb tqdm
+conda env create -f conda_env.yml -y
 ```
 
-You may need to update the version specified for pytorch-cuda to your installed cuda version. You can check this with `nvcc --version`.
+This will create an environment called `lasermpnn`.
+
+To ensure your conda installation is using the libmamba solver, run `conda config --show-sources` 
+and ensure the output has `solver: libmamba` at the bottom. 
+If not, run `conda config --set-solver libmamba`.
 
 
 ### Running Inference

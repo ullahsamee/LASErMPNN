@@ -27,8 +27,7 @@ def _run_inference(
     sequence_temp: Optional[float] = None, chi_temp: Optional[float] = None, 
     chi_min_p: float = 0.0, seq_min_p: float = 0.0, use_water: bool = False, disable_pbar: bool = False,
     ignore_chain_mask_zeros: bool = False, disabled_residues_list: List[str] = ['X'], bb_noise: float = 0.0,
-    disable_charged_fs: bool = False, fix_beta: bool = False, 
-    repack_only_input_sequence: bool = False, 
+    fix_beta: bool = False, repack_only_input_sequence: bool = False, 
     first_shell_sequence_temp: Optional[float] = None, ignore_ligand: bool = False
 ) -> Tuple[Sampled_Output, torch.Tensor, torch.Tensor, torch.Tensor, BatchData, ProteinComplexData]:
     model.eval()
@@ -58,8 +57,8 @@ def _run_inference(
         model, batch_data, sequence_temp, bb_noise, params, 
         disable_pbar=disable_pbar, chi_temp=chi_temp, chi_min_p=chi_min_p, 
         seq_min_p=seq_min_p, ignore_chain_mask_zeros=ignore_chain_mask_zeros, 
-        disabled_residues=disabled_residues_list, disable_charged_first_shell=disable_charged_fs, 
-        repack_all=repack_only_input_sequence, fs_sequence_temp=first_shell_sequence_temp
+        disabled_residues=disabled_residues_list, repack_all=repack_only_input_sequence, 
+        fs_sequence_temp=first_shell_sequence_temp
     )
     full_atom_coords = model.rotamer_builder.build_rotamers(batch_data.backbone_coords, sampled_output.sampled_chi_degrees, sampled_output.sampled_sequence_indices, add_nonrotatable_hydrogens=True)
     assert isinstance(full_atom_coords, torch.Tensor), "unreachable."
@@ -76,7 +75,7 @@ def run_inference(
         input_pdb_directory, output_pdb_directory, model_weights_path, sequence_temp, chi_temp, 
         inference_device, designs_per_input, designs_per_batch, use_water, ignore_key_mismatch, 
         verbose=True, seq_min_p=0.0, chi_min_p=0.0, output_idx_offset=0, disabled_residues='', 
-        disable_charged_fs=False, fix_beta=False, repack_only_input_sequence=False, 
+        fix_beta=False, repack_only_input_sequence=False, 
         first_shell_sequence_temp=None, ignore_ligand=False
 ):
     sequence_temp = float(sequence_temp) if sequence_temp else None
@@ -124,7 +123,7 @@ def run_inference(
                 model, params, file, curr_num_to_design, 
                 use_water=use_water, sequence_temp=sequence_temp, chi_temp=chi_temp, chi_min_p=chi_min_p, seq_min_p=seq_min_p, 
                 disabled_residues_list=disabled_residues_list, disable_pbar=not verbose,
-                disable_charged_fs=disable_charged_fs, fix_beta=fix_beta, repack_only_input_sequence=repack_only_input_sequence,
+                fix_beta=fix_beta, repack_only_input_sequence=repack_only_input_sequence,
                 first_shell_sequence_temp=first_shell_sequence_temp, ignore_ligand=ignore_ligand
             )
             
@@ -164,7 +163,6 @@ def parse_args(default_weights_path: str):
     parser.add_argument('--silent', dest='verbose', action='store_false', help='Silences all output except pbar.')
     parser.add_argument('--ignore_key_mismatch', action='store_false', help='Allows mismatched keys in checkpoint statedict')
     parser.add_argument('--disabled_residues', type=str, default='X', help='Residues to disable in sampling.')
-    parser.add_argument('--disable_charged_fs', action='store_true', help='Disables charged residues in the first shell.')
     parser.add_argument('--fix_beta', action='store_true', help='If B-factors are set to 1, fixes the residue and rotamer, if not, designs that position.')
     parser.add_argument('--repack_only_input_sequence', action='store_true', help='Repacks the input sequence without changing the sequence.')
     parser.add_argument('--ignore_ligand', action='store_true', help='Ignore ligand in sampling.')
