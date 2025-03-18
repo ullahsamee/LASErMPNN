@@ -238,9 +238,10 @@ class ProteinComplexData:
         b0 = chi_coords_stacked[:, :, 0, :] - chi_coords_stacked[:, :, 1, :]
         b1 = chi_coords_stacked[:, :, 1, :] - chi_coords_stacked[:, :, 2, :]
         b2 = chi_coords_stacked[:, :, 2, :] - chi_coords_stacked[:, :, 3, :]
-        n1 = torch.cross(b0, b1)
-        n2 = torch.cross(b1, b2)
-        m1 = torch.cross(n1, b1 / torch.linalg.vector_norm(b1, dim=2, keepdim=True))
+
+        n1 = torch.cross(b0, b1, dim=-1)
+        n2 = torch.cross(b1, b2, dim=-1)
+        m1 = torch.cross(n1, b1 / torch.linalg.vector_norm(b1, dim=2, keepdim=True), dim=-1)
         x = torch.sum(n1 * n2, dim=-1)
         y = torch.sum(m1 * n2, dim=-1)
 
