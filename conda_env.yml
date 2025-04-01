@@ -29,3 +29,4 @@ dependencies:
   - logomaker
   - wandb
   - tqdm
+  - rdkit-to-params
