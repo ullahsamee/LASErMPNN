@@ -63,8 +63,20 @@ def get_forward_pass_probabilities(model, training_parameter_dict, input_protein
 
 
 @torch.no_grad()
-def compute_unconditional_probs(model, param_dict, pdb_file: Path, output_dir: Path):
+def compute_unconditional_probs(model, param_dict, pdb_file: Path, output_dir: Path, selection_string: str):
     sequence_logits, fs_mask, seq_indices, rescodes = get_forward_pass_probabilities(model, param_dict, str(pdb_file), unconditional=True)
+
+    if len(selection_string) > 0 :
+        A = pr.parsePDB(str(pdb_file))
+        sele = A.select(f'(same residue as ({selection_string})) and name CA')
+        if sele is not None:
+            resindices = sele.getResindices()
+            new_mask = torch.zeros_like(fs_mask)
+            new_mask[resindices] = True
+            print(new_mask)
+            fs_mask = new_mask
+        else:
+            raise ValueError('ProDy string is invalid!')
 
     ylabels = [x for idx, x in enumerate(rescodes) if fs_mask[idx]]
     fig, axes = plt.subplots(figsize=(5, 5), dpi=300)
@@ -102,7 +114,7 @@ def compute_conditional_probs(model, training_parameter_dict, pdb_file: Path, ou
 
             # Set all betas to 1.0 except for the unfixed residue
             protein_hv.getAtoms().setBetas(1.0)
-            protein_hv.getAtoms().select(f'chain A and resnum {unfixed_index}').setBetas(0.0)
+            protein_hv.getAtoms().select(f'resindex {unfixed_index}').setBetas(0.0)
 
             data = ProteinComplexData(protein_hv, str(pdb_file), verbose=False)
             batch_data = data.output_batch_data(fix_beta=True, num_copies=n_decoding_orders)
@@ -177,7 +189,11 @@ def compute_conditional_probs(model, training_parameter_dict, pdb_file: Path, ou
     return output_path
 
 
-def main(pdb_file: str, output_dir: str, device: str, weights: str, disable_inference_dropout: bool, silent: bool, n_decoding_orders: int, n_dropouts: int, repack_all: bool):
+def main(
+    pdb_file: str, output_dir: str, device: str, weights: str, 
+    disable_inference_dropout: bool, silent: bool, n_decoding_orders: int, 
+    n_dropouts: int, repack_all: bool, selection_string: str,
+):
 
     weights_path = Path(weights).resolve()
     if not weights_path.exists():
@@ -191,7 +207,7 @@ def main(pdb_file: str, output_dir: str, device: str, weights: str, disable_infe
     output_dir_path.mkdir(exist_ok=True, parents=True)
 
     if not silent: print(f'Running unconditional proofreading on {pdb_file_path.name}...')
-    fs_mask, ylabels, uncond_output_path = compute_unconditional_probs(model, param_dict, pdb_file_path, output_dir_path)
+    fs_mask, ylabels, uncond_output_path = compute_unconditional_probs(model, param_dict, pdb_file_path, output_dir_path, selection_string)
     if not silent: print(f'Unconditional proofreading complete. Output saved to {uncond_output_path}\n')
 
     if not silent: print('Running `fully-conditional` autoregressive, multi-dropout, multi-decoding order proofreading...')
@@ -212,5 +228,6 @@ if __name__ == '__main__':
     parser.add_argument('--n_decoding_orders', type=int, default=10, help='Number of decoding orders to use.')
     parser.add_argument('--n_dropouts', type=int, default=10, help='Number of dropouts to use.')
     parser.add_argument('--repack_all', action='store_true', help='Repack all residues.')
+    parser.add_argument('--selection_string', '-r', type=str, default='', help='A Prody selection string to override the default behavior of proofreading the binding site only.')
     args = parser.parse_args()
     main(**vars(args))
