@@ -2,7 +2,8 @@
 
 ### TODO:
 
-- [ ] Make Github Release when finalized (and create DOI for verison?).
+- [ ] Make Release when finalized (and create DOI for verison?).
+- [ ] Add weights for EPIC design and proofreading.
 - [ ] Add pdb code dataset split text files.
 - [ ] Add Colab notebook.
 - [ ] Add paper link.
