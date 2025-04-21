@@ -1,5 +1,12 @@
 # LASErMPNN: Small-Molecule Conditioned Protein Sequence Design
 
+### TODO:
+
+- [ ] Make Github Release when finalized (and create DOI for verison?).
+- [ ] Add pdb code dataset split text files.
+- [ ] Add Colab notebook.
+- [ ] Add paper link.
+- [ ] Add LigandMPNN architecture retraining code.
 
 ### Environment Setup
 
@@ -119,11 +126,6 @@ Training the Ligand Encoder module can be done with much lower memory and a sing
 
 ### Neural Iterative Selection & Expansion Implementation
 
-TODO...
+see https://www.github.com/polizzilab/NISE for a NISE protocol implementation using Boltz-1.
 
 
-# TODO:
-
-- [ ] Release PDB Database to Zenodo and record DOIs.
-- [ ] Make Github Release when all data uploaded (and create DOI?).
-- [ ] 
