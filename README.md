@@ -1,5 +1,7 @@
 # LASErMPNN: Small-Molecule Conditioned Protein Sequence Design
 
+Check out the paper [here](https://www.biorxiv.org/content/10.1101/2025.04.22.649862v1.full.pdf)!
+
 > [!WARNING]
 > A major difference between LASErMPNN and LigandMPNN is that LASErMPNN was trained on protonated structures. 
 > Please make sure your ligand has the appropriate hydrogens (in the expected protonation state) attached when running the model or you may encounter unexpected behavior.
