@@ -1,6 +1,6 @@
 # LASErMPNN: Small-Molecule Conditioned Protein Sequence Design
 
-Check out the paper [here](https://www.biorxiv.org/content/10.1101/2025.04.22.649862v1)!
+### Check out the paper [here](https://www.biorxiv.org/content/10.1101/2025.04.22.649862v1)!
 
 > [!WARNING]
 > A major difference between LASErMPNN and LigandMPNN is that LASErMPNN was trained on protonated structures. 
@@ -8,11 +8,9 @@ Check out the paper [here](https://www.biorxiv.org/content/10.1101/2025.04.22.64
 
 ### TODO:
 
-- [ ] Make Release when finalized (and create DOI for verison?).
-- [ ] Add weights for EPIC design and proofreading.
-- [ ] Add pdb code dataset split text files.
+- [ ] Make Release when finalized.
 - [ ] Add Colab notebook.
-- [ ] Add paper link.
+- [ ] Add pdb code dataset split text files to avoid digging into code.
 - [ ] Add LigandMPNN architecture retraining code.
 
 ### Environment Setup
