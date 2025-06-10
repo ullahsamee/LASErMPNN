@@ -24,7 +24,7 @@ ProDy is used internally to read and write PDB files.
 To install the training environment, run the following set of commands using a [MiniForge](https://github.com/conda-forge/miniforge/releases/tag/24.11.3-2) installation (recommended) or an existing conda installation with a libmamba solver.
 
 ```bash
-conda env create -f conda_env.yml -y
+mamba env create -f conda_env.yml -y
 ```
 
 This will create an environment called `lasermpnn`.
@@ -40,7 +40,7 @@ This script outputs a single pdb file named `laser_output.pdb` and is useful for
 
 
 ```text
-usage: run_inference.py [-h] [--model_weights MODEL_WEIGHTS] [--output_path OUTPUT_PATH] [--temp SEQUENCE_TEMP] [--fs_sequence_temp FS_SEQUENCE_TEMP] [--bb_noise BACKBONE_NOISE] [--device DEVICE] [--fix_beta] [--ignore_statedict_mismatch]
+usage: python run_inference.py [-h] [--model_weights MODEL_WEIGHTS] [--output_path OUTPUT_PATH] [--temp SEQUENCE_TEMP] [--fs_sequence_temp FS_SEQUENCE_TEMP] [--bb_noise BACKBONE_NOISE] [--device DEVICE] [--fix_beta] [--ignore_statedict_mismatch]
                         [--ebd] [--repack_only] [--ignore_ligand]
                         input_pdb_code
 
